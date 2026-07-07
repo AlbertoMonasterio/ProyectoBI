@@ -116,7 +116,7 @@ CREATE TABLE REGISTRO_SINIESTRO (
 -- =========================================================================
 -- FASE B: INSERCIÓN DE DATOS TRANSACCIONALES
 -- =========================================================================
-SET search_path TO SEGURO_G27797047;
+SET search_path TO "SEGURO_G27797047";
 
 -- 1. PAIS
 INSERT INTO PAIS (cod_pais, nb_pais) VALUES ('VE', 'Venezuela');

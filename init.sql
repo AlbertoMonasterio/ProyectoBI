@@ -671,10 +671,8 @@ INSERT INTO REGISTRO_SINIESTRO (nro_siniestro, nro_contrato, fecha_siniestro, fe
 -- =========================================================================
 -- FASE C: MODELO DIMENSIONAL (DATA WAREHOUSE)
 -- =========================================================================
-CREATE SCHEMA "SEGURO_DW_G27797047";
-SET search_path TO "SEGURO_DW_G27797047";
-
--- Creación y selección del esquema del Data Warehouse
+-- BUG 3 FIX: Se eliminó el CREATE SCHEMA duplicado sin IF NOT EXISTS que
+-- causaba error si el esquema ya existía. Se conserva solo la versión segura.
 CREATE SCHEMA IF NOT EXISTS "SEGURO_DW_G27797047";
 SET search_path TO "SEGURO_DW_G27797047";
 
@@ -689,7 +687,7 @@ CREATE TABLE DIM_TIEMPO (
     COD_MES INTEGER,
     COD_DIA INTEGER,
     DESC_MES VARCHAR(50),
-    DESC_TRIMESTRE VARCHAR(10),
+    DESC_TRIMESTRE VARCHAR(15),
     DESC_SEMESTRE VARCHAR(10),
     FECHA_COMPLETA DATE
 );
@@ -822,7 +820,8 @@ SELECT
         WHEN 1 THEN 'Enero' WHEN 2 THEN 'Febrero' WHEN 3 THEN 'Marzo' WHEN 4 THEN 'Abril' WHEN 5 THEN 'Mayo' WHEN 6 THEN 'Junio'
         WHEN 7 THEN 'Julio' WHEN 8 THEN 'Agosto' WHEN 9 THEN 'Septiembre' WHEN 10 THEN 'Octubre' WHEN 11 THEN 'Noviembre' WHEN 12 THEN 'Diciembre'
     END,
-    'Trim. ' || extract(quarter from fecha), CASE WHEN extract(month from fecha) <= 6 THEN 'Semestre 1' ELSE 'Semestre 2' END, fecha
+    -- BUG 6 FIX: Unificado a 'Trimestre ' para coincidir con DimTiempo.sql
+    'Trimestre ' || extract(quarter from fecha), CASE WHEN extract(month from fecha) <= 6 THEN 'Semestre 1' ELSE 'Semestre 2' END, fecha
 FROM generate_series('2015-01-01'::date, '2030-12-31'::date, '1 day'::interval) as fecha;
 
 -- =========================================================================
@@ -859,23 +858,38 @@ BEGIN
     SELECT nro_siniestro, descripcion_siniestro FROM "SEGURO_G27797047".SINIESTRO
     ON CONFLICT (NRO_SINIESTRO) DO UPDATE SET DESCRIP_SINIESTRO = EXCLUDED.DESCRIP_SINIESTRO;
 
-    -- >>> AQUI ESTA LA DIMENSION QUE FALTABA <<<
     INSERT INTO "SEGURO_DW_G27797047".DIM_EVALUACION_SERVICIO (COD_EVALUACION, NB_DESCRIP)
     SELECT cod_evaluacion_servicio, nb_descripcion FROM "SEGURO_G27797047".EVALUACION_SERVICIO
     ON CONFLICT (COD_EVALUACION) DO UPDATE SET NB_DESCRIP = EXCLUDED.NB_DESCRIP;
 
+    -- BUG 1 FIX: Carga incremental de DIM_ESTADO_CONTRATO (nunca se poblaba antes)
+    INSERT INTO "SEGURO_DW_G27797047".DIM_ESTADO_CONTRATO (COD_ESTADO, DESCRIP_ESTADO)
+    VALUES ('AC', 'activo'), ('VE', 'vencido'), ('SU', 'suspendido')
+    ON CONFLICT (COD_ESTADO) DO UPDATE SET DESCRIP_ESTADO = EXCLUDED.DESCRIP_ESTADO;
+
     -- ==========================================
     -- 2. CARGA DE TABLAS DE HECHOS (RELOAD)
     -- ==========================================
-    
+
     -- FACT_REGISTRO_CONTRATO
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO;
-    INSERT INTO "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO (SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_PRODUCTO, MONTO, CANTIDAD)
-    SELECT to_char(rc.fecha_inicio, 'YYYYMMDD')::integer, dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, dp.SK_DIM_PRODUCTO, rc.monto, 1
+    -- BUG 1 + BUG 2 FIX: Se agregan SK_DIM_TIEMPO_FECHA_FIN y SK_DIM_ESTADO_CONTRATO
+    INSERT INTO "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO (
+        SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_TIEMPO_FECHA_FIN,
+        SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_PRODUCTO,
+        SK_DIM_ESTADO_CONTRATO, MONTO, CANTIDAD
+    )
+    SELECT
+        to_char(rc.fecha_inicio, 'YYYYMMDD')::integer,
+        to_char(rc.fecha_fin,    'YYYYMMDD')::integer,
+        dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, dp.SK_DIM_PRODUCTO,
+        de.SK_DIM_ESTADO,
+        rc.monto, 1
     FROM "SEGURO_G27797047".REGISTRO_CONTRATO rc
     JOIN "SEGURO_DW_G27797047".DIM_CLIENTE dc ON rc.cod_cliente = dc.COD_CLIENTE
     JOIN "SEGURO_DW_G27797047".DIM_CONTRATO dcon ON rc.nro_contrato = dcon.NRO_CONTRATO
-    JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON rc.cod_producto = dp.COD_PRODUCTO;
+    JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON rc.cod_producto = dp.COD_PRODUCTO
+    JOIN "SEGURO_DW_G27797047".DIM_ESTADO_CONTRATO de ON de.DESCRIP_ESTADO = rc.estado_contrato;
 
     -- FACT_REGISTRO_SINIESTRO
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_REGISTRO_SINIESTRO;
@@ -910,8 +924,19 @@ BEGIN
 
     -- FACT_METAS
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_METAS;
-    INSERT INTO "SEGURO_DW_G27797047".FACT_METAS (SK_DIM_FECHA_INICIO_META, SK_DIM_FECHA_FIN_META, SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_CONTRATO, MONTO_META_INGRESO, META_RENOVACION, META_ASEGURADOS)
-    SELECT 20260101, 20261231, dc.SK_DIM_CLIENTE, dp.SK_DIM_PRODUCTO, dc_cont.SK_DIM_CONTRATO, ROUND((RANDOM() * 5000 + 1000)::numeric, 2), FLOOR(RANDOM() * 5 + 1)::integer, FLOOR(RANDOM() * 10 + 2)::integer
+    -- BUG 5 FIX: RANDOM() reemplazado por fórmula determinista basada en SKs
+    -- para garantizar reproducibilidad en cada ejecución del ETL.
+    INSERT INTO "SEGURO_DW_G27797047".FACT_METAS (
+        SK_DIM_FECHA_INICIO_META, SK_DIM_FECHA_FIN_META,
+        SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_CONTRATO,
+        MONTO_META_INGRESO, META_RENOVACION, META_ASEGURADOS
+    )
+    SELECT
+        20260101, 20261231,
+        dc.SK_DIM_CLIENTE, dp.SK_DIM_PRODUCTO, dc_cont.SK_DIM_CONTRATO,
+        ROUND((1000 + (dc.SK_DIM_CLIENTE * 37 + dp.SK_DIM_PRODUCTO * 113) % 4001)::numeric, 2),
+        (dc.SK_DIM_CLIENTE + dp.SK_DIM_PRODUCTO) % 5 + 1,
+        (dc.SK_DIM_CLIENTE + dp.SK_DIM_PRODUCTO) % 9 + 2
     FROM "SEGURO_DW_G27797047".DIM_CLIENTE dc
     CROSS JOIN (SELECT SK_DIM_PRODUCTO FROM "SEGURO_DW_G27797047".DIM_PRODUCTO LIMIT 3) dp
     CROSS JOIN (SELECT SK_DIM_CONTRATO FROM "SEGURO_DW_G27797047".DIM_CONTRATO LIMIT 3) dc_cont

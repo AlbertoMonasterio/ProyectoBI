@@ -1,5 +1,5 @@
--- =========================================================================
--- SCRIPT DE INICIALIZACIÓN DE BASE DE DATOS Y DATA WAREHOUSE
+﻿-- =========================================================================
+-- SCRIPT DE INICIALIZACIÃ“N DE BASE DE DATOS Y DATA WAREHOUSE
 -- PROYECTO BI - FASE II
 -- =========================================================================
 
@@ -11,7 +11,7 @@ DROP SCHEMA IF EXISTS "SEGURO_DW_G27797047" CASCADE;
 -- FASE A: MODELO TRANSACCIONAL (FUENTE)
 -- =========================================================================
 
--- Creación y selección del esquema fuente
+-- CreaciÃ³n y selecciÃ³n del esquema fuente
 CREATE SCHEMA IF NOT EXISTS "SEGURO_G27797047";
 SET search_path TO "SEGURO_G27797047";
 
@@ -70,11 +70,12 @@ CREATE TABLE EVALUACION_SERVICIO (
 
 -- 8. RECOMIENDA
 CREATE TABLE RECOMIENDA (
+    id_evaluacion SERIAL PRIMARY KEY,
     cod_cliente VARCHAR(10) REFERENCES CLIENTE(cod_cliente),
     cod_evaluacion_servicio VARCHAR(10) REFERENCES EVALUACION_SERVICIO(cod_evaluacion_servicio),
     cod_producto VARCHAR(10) REFERENCES PRODUCTO(cod_producto),
     recomienda_amigo VARCHAR(2) CHECK (recomienda_amigo IN ('SI', 'NO')),
-    PRIMARY KEY (cod_cliente, cod_producto)
+    fecha_evaluacion DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
 -- 9. CONTRATO
@@ -92,7 +93,7 @@ CREATE TABLE REGISTRO_CONTRATO (
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     monto REAL NOT NULL,
-    estado_contrato VARCHAR(20) CHECK (estado_contrato IN ('activo', 'vencido', 'suspendido'))
+    estado_contrato VARCHAR(20) NOT NULL CHECK (estado_contrato IN ('activo', 'vencido', 'suspendido'))
 );
 
 -- 11. SINIESTRO
@@ -113,10 +114,23 @@ CREATE TABLE REGISTRO_SINIESTRO (
     monto_solicitado REAL NOT NULL
 );
 
+-- 13. METAS
+CREATE TABLE METAS (
+    cod_meta SERIAL PRIMARY KEY,
+    annio INTEGER NOT NULL,
+    cod_producto VARCHAR(10) REFERENCES PRODUCTO(cod_producto),
+    meta_asegurados INTEGER NOT NULL,
+    meta_renovacion INTEGER NOT NULL,
+    meta_ingreso REAL NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    UNIQUE (annio, cod_producto)
+);
+
 -- =========================================================================
--- FASE B: INSERCIÓN DE DATOS TRANSACCIONALES
+-- FASE B: INSERCIÃ“N DE DATOS TRANSACCIONALES
 -- =========================================================================
-SET search_path TO SEGURO_G27797047;
+SET search_path TO "SEGURO_G27797047";
 
 -- 1. PAIS
 INSERT INTO PAIS (cod_pais, nb_pais) VALUES ('VE', 'Venezuela');
@@ -145,93 +159,93 @@ INSERT INTO PRODUCTO (cod_producto, nb_producto, descripcion, cod_tipo_producto,
 
 -- 6. CLIENTE
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C001', 'Fidela Plaza Rios', 'V-8123818', '0416-5198985', 'Av. Francisco de Miranda, Caracas', 'F', 'pilarmartorell@example.org', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C002', 'Cornelio Julián', 'V-27321673', '0412-5165903', 'Calle 72, Maracaibo', 'M', 'ferrancamila@example.org', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C002', 'Cornelio JuliÃ¡n', 'V-27321673', '0412-5165903', 'Calle 72, Maracaibo', 'M', 'ferrancamila@example.org', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C003', 'Porfirio Sales Sotelo', 'V-6977997', '0424-7081357', 'Av. Las Delicias, Maracay', 'F', 'rosario47@example.net', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C004', 'Priscila Criado Cerezo', 'V-8050769', '0412-1720780', 'Urb. El Trigal, Valencia', 'F', 'almudenamenendez@example.org', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C005', 'Ciro Rincón Gutiérrez', 'V-23573705', '0412-7934467', 'Av. Las Delicias, Maracay', 'M', 'eaguilar@example.org', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C006', 'María Dolores Gargallo Ferrer', 'V-22238121', '0424-9555415', 'Calle 72, Maracaibo', 'F', 'solanamelania@example.org', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C007', 'Armida Ródenas Madrigal', 'V-24468713', '0412-6710053', 'Calle 72, Maracaibo', 'M', 'miroruben@example.com', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C005', 'Ciro RincÃ³n GutiÃ©rrez', 'V-23573705', '0412-7934467', 'Av. Las Delicias, Maracay', 'M', 'eaguilar@example.org', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C006', 'MarÃ­a Dolores Gargallo Ferrer', 'V-22238121', '0424-9555415', 'Calle 72, Maracaibo', 'F', 'solanamelania@example.org', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C007', 'Armida RÃ³denas Madrigal', 'V-24468713', '0412-6710053', 'Calle 72, Maracaibo', 'M', 'miroruben@example.com', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C008', 'Lucho Valera Plaza', 'V-6899395', '0426-2427558', 'Calle 72, Maracaibo', 'M', 'ledesmaroque@example.net', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C009', 'Guiomar Otero Ferrández', 'V-28682738', '0414-2048970', 'Av. Francisco de Miranda, Caracas', 'M', 'florentinaferrando@example.org', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C009', 'Guiomar Otero FerrÃ¡ndez', 'V-28682738', '0414-2048970', 'Av. Francisco de Miranda, Caracas', 'M', 'florentinaferrando@example.org', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C010', 'Modesto del Blasco', 'V-30321671', '0424-9010856', 'Av. Las Delicias, Maracay', 'M', 'veronicaroura@example.com', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C011', 'Ángeles Montalbán', 'V-23982504', '0414-9237191', 'Av. Bolivar, Caracas', 'F', 'vilacarmela@example.org', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C012', 'Hernando Páez Álvarez', 'V-17701355', '0424-8815862', 'Av. Bolivar, Caracas', 'F', 'drevilla@example.org', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C011', 'Ãngeles MontalbÃ¡n', 'V-23982504', '0414-9237191', 'Av. Bolivar, Caracas', 'F', 'vilacarmela@example.org', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C012', 'Hernando PÃ¡ez Ãlvarez', 'V-17701355', '0424-8815862', 'Av. Bolivar, Caracas', 'F', 'drevilla@example.org', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C013', 'Valerio Baeza Montesinos', 'V-14682322', '0426-3758753', 'Av. Bolivar, Caracas', 'M', 'elviraaragon@example.net', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C014', 'Cebrián del Aguirre', 'V-18469265', '0414-8897151', 'Av. Bolivar, Caracas', 'M', 'nbarcelo@example.com', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C014', 'CebriÃ¡n del Aguirre', 'V-18469265', '0414-8897151', 'Av. Bolivar, Caracas', 'M', 'nbarcelo@example.com', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C015', 'Elisabet Moliner Sanabria', 'V-28821825', '0212-8580591', 'Av. Las Delicias, Maracay', 'F', 'arinopriscila@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C016', 'Candelaria de Sierra', 'V-16648224', '0212-1845196', 'Av. Francisco de Miranda, Caracas', 'M', 'peralmanolo@example.net', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C017', 'Azahara Esteban Mateo', 'V-16409185', '0412-6323949', 'Calle 72, Maracaibo', 'M', 'mpuig@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C018', 'Albano Luz Botella', 'V-11881854', '0426-4089877', 'Calle 72, Maracaibo', 'M', 'giraltfelipa@example.com', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C019', 'Javiera Berrocal', 'V-19660957', '0414-8696384', 'Urb. El Trigal, Valencia', 'M', 'reynaldo01@example.org', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C020', 'Luís Roldán', 'V-5184075', '0426-6412027', 'Calle 72, Maracaibo', 'F', 'damianmate@example.org', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C020', 'LuÃ­s RoldÃ¡n', 'V-5184075', '0426-6412027', 'Calle 72, Maracaibo', 'F', 'damianmate@example.org', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C021', 'Carmelo Iriarte', 'V-30679107', '0414-9930649', 'Urb. El Trigal, Valencia', 'M', 'omerino@example.com', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C022', 'Antonia Adán Villa', 'V-13717031', '0212-1055027', 'Av. Francisco de Miranda, Caracas', 'M', 'isevillano@example.com', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C023', 'Elena Anita Iriarte Pagès', 'V-6660550', '0426-6940902', 'Av. Las Delicias, Maracay', 'F', 'andresnicanor@example.org', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C024', 'Nazaret Méndez Soler', 'V-7520378', '0212-1615642', 'Av. Bolivar, Caracas', 'F', 'gallardotrinidad@example.org', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C025', 'Lino Céspedes Egea', 'V-17943846', '0426-2083033', 'Av. Las Delicias, Maracay', 'M', 'ualiaga@example.net', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C022', 'Antonia AdÃ¡n Villa', 'V-13717031', '0212-1055027', 'Av. Francisco de Miranda, Caracas', 'M', 'isevillano@example.com', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C023', 'Elena Anita Iriarte PagÃ¨s', 'V-6660550', '0426-6940902', 'Av. Las Delicias, Maracay', 'F', 'andresnicanor@example.org', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C024', 'Nazaret MÃ©ndez Soler', 'V-7520378', '0212-1615642', 'Av. Bolivar, Caracas', 'F', 'gallardotrinidad@example.org', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C025', 'Lino CÃ©spedes Egea', 'V-17943846', '0426-2083033', 'Av. Las Delicias, Maracay', 'M', 'ualiaga@example.net', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C026', 'Lino Eduardo Torre Bernal', 'V-27999591', '0416-7070744', 'Av. Lara, Barquisimeto', 'M', 'boadanayara@example.com', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C027', 'Edgardo Conesa Sebastián', 'V-6961923', '0416-3167766', 'Av. Francisco de Miranda, Caracas', 'F', 'leonciomontes@example.net', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C028', 'Ana Belén Cabrera Gaya', 'V-18211046', '0426-5914807', 'Av. Las Delicias, Maracay', 'M', 'herranzmaria-jose@example.net', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C029', 'Cintia Lupe Tudela Báez', 'V-9733898', '0212-2714499', 'Av. Lara, Barquisimeto', 'F', 'roberto63@example.net', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C027', 'Edgardo Conesa SebastiÃ¡n', 'V-6961923', '0416-3167766', 'Av. Francisco de Miranda, Caracas', 'F', 'leonciomontes@example.net', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C028', 'Ana BelÃ©n Cabrera Gaya', 'V-18211046', '0426-5914807', 'Av. Las Delicias, Maracay', 'M', 'herranzmaria-jose@example.net', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C029', 'Cintia Lupe Tudela BÃ¡ez', 'V-9733898', '0212-2714499', 'Av. Lara, Barquisimeto', 'F', 'roberto63@example.net', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C030', 'Evita Bello Sarabia', 'V-10091767', '0416-1157082', 'Calle 72, Maracaibo', 'F', 'lbecerra@example.net', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C031', 'Laura del Tejero', 'V-25428292', '0414-2757648', 'Av. Francisco de Miranda, Caracas', 'M', 'kfigueras@example.com', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C032', 'Rocío Cepeda', 'V-20947369', '0424-6393150', 'Av. Las Delicias, Maracay', 'M', 'edmundo09@example.org', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C032', 'RocÃ­o Cepeda', 'V-20947369', '0424-6393150', 'Av. Las Delicias, Maracay', 'M', 'edmundo09@example.org', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C033', 'Florina Real Alvarez', 'V-30225216', '0412-6883948', 'Urb. El Trigal, Valencia', 'M', 'placido32@example.org', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C034', 'Casandra Garmendia', 'V-24897392', '0424-4426546', 'Av. Lara, Barquisimeto', 'F', 'ana-sofia02@example.com', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C035', 'Albert Durán Jara', 'V-25540520', '0426-1395983', 'Av. Lara, Barquisimeto', 'F', 'camachoamada@example.net', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C035', 'Albert DurÃ¡n Jara', 'V-25540520', '0426-1395983', 'Av. Lara, Barquisimeto', 'F', 'camachoamada@example.net', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C036', 'Octavio Pont', 'V-24540427', '0212-7106781', 'Av. Francisco de Miranda, Caracas', 'M', 'ana-belen81@example.org', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C037', 'Rafael Cobo Pablo', 'V-19522802', '0212-9365532', 'Av. Francisco de Miranda, Caracas', 'F', 'pioquerol@example.com', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C038', 'Berta Llabrés Checa', 'V-13770984', '0412-9616500', 'Av. Francisco de Miranda, Caracas', 'M', 'quintanajuanita@example.org', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C039', 'Casandra Manola Doménech Ortuño', 'V-28575509', '0414-4655917', 'Av. Francisco de Miranda, Caracas', 'F', 'edelmirobermudez@example.com', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C038', 'Berta LlabrÃ©s Checa', 'V-13770984', '0412-9616500', 'Av. Francisco de Miranda, Caracas', 'M', 'quintanajuanita@example.org', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C039', 'Casandra Manola DomÃ©nech OrtuÃ±o', 'V-28575509', '0414-4655917', 'Av. Francisco de Miranda, Caracas', 'F', 'edelmirobermudez@example.com', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C040', 'Baldomero Correa Palma', 'V-24860351', '0412-3265549', 'Av. Lara, Barquisimeto', 'M', 'ocasal@example.com', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C041', 'Luis Ángel de Bautista', 'V-23079332', '0212-6701040', 'Av. Las Delicias, Maracay', 'F', 'pcal@example.net', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C041', 'Luis Ãngel de Bautista', 'V-23079332', '0212-6701040', 'Av. Las Delicias, Maracay', 'F', 'pcal@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C042', 'Yolanda Vilalta Cerezo', 'V-13410027', '0424-9244459', 'Av. Bolivar, Caracas', 'F', 'ana92@example.net', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C043', 'Laura de Tur', 'V-26647071', '0212-6955000', 'Av. Las Delicias, Maracay', 'F', 'bibianagalvan@example.net', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C044', 'Estela Calleja Carreras', 'V-18060896', '0412-7964756', 'Av. Lara, Barquisimeto', 'F', 'mcoca@example.org', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C045', 'Roque Sala Mora', 'V-14359632', '0412-4849924', 'Calle 72, Maracaibo', 'M', 'inigo20@example.com', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C046', 'Josefa Rincón Robles', 'V-6836282', '0414-6477420', 'Av. Las Delicias, Maracay', 'M', 'morenoalfonso@example.org', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C046', 'Josefa RincÃ³n Robles', 'V-6836282', '0414-6477420', 'Av. Las Delicias, Maracay', 'M', 'morenoalfonso@example.org', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C047', 'Gema Gutierrez Alberola', 'V-12025881', '0412-2633640', 'Calle 72, Maracaibo', 'M', 'osunahernando@example.org', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C048', 'Dulce Borrego', 'V-20978825', '0414-9450429', 'Av. Francisco de Miranda, Caracas', 'F', 'vilarpepita@example.net', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C049', 'Juan Pablo Mascaró-Blanca', 'V-29006056', '0412-5701099', 'Av. Bolivar, Caracas', 'M', 'bonetjose-angel@example.net', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C049', 'Juan Pablo MascarÃ³-Blanca', 'V-29006056', '0412-5701099', 'Av. Bolivar, Caracas', 'M', 'bonetjose-angel@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C050', 'Mateo del Vendrell', 'V-21936604', '0426-5825957', 'Av. Lara, Barquisimeto', 'F', 'salascarmela@example.com', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C051', 'Eloísa Mancebo Merino', 'V-14871504', '0414-3348572', 'Av. Bolivar, Caracas', 'M', 'raquel05@example.org', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C051', 'EloÃ­sa Mancebo Merino', 'V-14871504', '0414-3348572', 'Av. Bolivar, Caracas', 'M', 'raquel05@example.org', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C052', 'Miriam Carro-Sosa', 'V-17919785', '0426-7349899', 'Av. Bolivar, Caracas', 'F', 'ciriacoanglada@example.net', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C053', 'Toño Marcos Sierra', 'V-14357770', '0212-5100955', 'Av. Bolivar, Caracas', 'M', 'antonia64@example.com', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C054', 'Rafael Marino Vélez Bernad', 'V-20273817', '0412-1850646', 'Av. Francisco de Miranda, Caracas', 'M', 'ileanajordan@example.net', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C053', 'ToÃ±o Marcos Sierra', 'V-14357770', '0212-5100955', 'Av. Bolivar, Caracas', 'M', 'antonia64@example.com', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C054', 'Rafael Marino VÃ©lez Bernad', 'V-20273817', '0412-1850646', 'Av. Francisco de Miranda, Caracas', 'M', 'ileanajordan@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C055', 'Candelas Lasa-Tamayo', 'V-22750389', '0416-2244782', 'Calle 72, Maracaibo', 'F', 'irispacheco@example.net', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C056', 'Noa Albero-Pol', 'V-10866209', '0424-4301243', 'Calle 72, Maracaibo', 'F', 'sacristancandela@example.com', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C057', 'Cruz Franch Torrens', 'V-11685563', '0412-3047797', 'Av. Lara, Barquisimeto', 'M', 'rodolfo31@example.com', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C058', 'Felicia Cuervo Franco', 'V-16508495', '0414-3764027', 'Av. Bolivar, Caracas', 'F', 'anastasia07@example.org', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C059', 'Visitación Serna', 'V-12634275', '0426-3335943', 'Urb. El Trigal, Valencia', 'F', 'hernando87@example.com', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C059', 'VisitaciÃ³n Serna', 'V-12634275', '0426-3335943', 'Urb. El Trigal, Valencia', 'F', 'hernando87@example.com', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C060', 'Alondra del Carranza', 'V-10039743', '0212-1049295', 'Av. Bolivar, Caracas', 'M', 'secoflor@example.com', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C061', 'Laura del Cámara', 'V-19602920', '0424-5627089', 'Calle 72, Maracaibo', 'M', 'asomoza@example.net', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C061', 'Laura del CÃ¡mara', 'V-19602920', '0424-5627089', 'Calle 72, Maracaibo', 'M', 'asomoza@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C062', 'Crescencia Palma Crespi', 'V-10448986', '0412-4680966', 'Av. Lara, Barquisimeto', 'M', 'florencio21@example.org', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C063', 'Tamara Iniesta-Bermúdez', 'V-12448493', '0412-3687733', 'Av. Francisco de Miranda, Caracas', 'M', 'sbarriga@example.net', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C063', 'Tamara Iniesta-BermÃºdez', 'V-12448493', '0412-3687733', 'Av. Francisco de Miranda, Caracas', 'M', 'sbarriga@example.net', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C064', 'Filomena Iglesia Robledo', 'V-11173779', '0426-5279365', 'Av. Bolivar, Caracas', 'M', 'iramirez@example.net', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C065', 'María Luisa Santamaría Rosado', 'V-15286480', '0414-6878046', 'Av. Francisco de Miranda, Caracas', 'M', 'bruno28@example.net', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C065', 'MarÃ­a Luisa SantamarÃ­a Rosado', 'V-15286480', '0414-6878046', 'Av. Francisco de Miranda, Caracas', 'M', 'bruno28@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C066', 'Melisa Sotelo Castillo', 'V-27824643', '0424-1303054', 'Av. Francisco de Miranda, Caracas', 'F', 'tecla18@example.net', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C067', 'Alcides Parejo Jiménez', 'V-25211661', '0412-9196917', 'Av. Las Delicias, Maracay', 'M', 'gervasio58@example.net', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C067', 'Alcides Parejo JimÃ©nez', 'V-25211661', '0412-9196917', 'Av. Las Delicias, Maracay', 'M', 'gervasio58@example.net', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C068', 'Segismundo Ribas Calvo', 'V-14795136', '0426-1507347', 'Av. Las Delicias, Maracay', 'F', 'irenegiralt@example.com', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C069', 'Nacho Álamo-Mancebo', 'V-15343142', '0412-8789102', 'Calle 72, Maracaibo', 'M', 'arcelia17@example.com', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C069', 'Nacho Ãlamo-Mancebo', 'V-15343142', '0412-8789102', 'Calle 72, Maracaibo', 'M', 'arcelia17@example.com', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C070', 'Isidoro Talavera Herranz', 'V-27291965', '0416-6261427', 'Calle 72, Maracaibo', 'M', 'godofredogonzalez@example.org', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C071', 'Gregorio Palacios Gargallo', 'V-23629364', '0416-1214023', 'Urb. El Trigal, Valencia', 'M', 'jonatanpons@example.org', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C072', 'Carolina Álvaro Anguita', 'V-27851376', '0426-5680040', 'Calle 72, Maracaibo', 'F', 'dbarbera@example.org', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C073', 'Narciso Tejedor Abellán', 'V-5961962', '0426-9471924', 'Urb. El Trigal, Valencia', 'M', 'carrascobienvenida@example.org', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C074', 'Haydée Lupita Escamilla Viña', 'V-18042110', '0212-2711457', 'Av. Bolivar, Caracas', 'F', 'guijarroselena@example.org', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C072', 'Carolina Ãlvaro Anguita', 'V-27851376', '0426-5680040', 'Calle 72, Maracaibo', 'F', 'dbarbera@example.org', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C073', 'Narciso Tejedor AbellÃ¡n', 'V-5961962', '0426-9471924', 'Urb. El Trigal, Valencia', 'M', 'carrascobienvenida@example.org', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C074', 'HaydÃ©e Lupita Escamilla ViÃ±a', 'V-18042110', '0212-2711457', 'Av. Bolivar, Caracas', 'F', 'guijarroselena@example.org', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C075', 'Sonia Bellido', 'V-10433740', '0414-6646002', 'Av. Lara, Barquisimeto', 'M', 'esteveznatalio@example.net', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C076', 'Patricio Alcaraz Rincón', 'V-9466691', '0416-2445693', 'Av. Las Delicias, Maracay', 'F', 'baldomerovilalta@example.org', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C077', 'Eva del Solé', 'V-18182595', '0424-4521241', 'Av. Lara, Barquisimeto', 'M', 'bayoncelestino@example.org', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C078', 'Evelia Narváez Rivas', 'V-12190641', '0416-9632538', 'Av. Bolivar, Caracas', 'F', 'norberto38@example.com', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C076', 'Patricio Alcaraz RincÃ³n', 'V-9466691', '0416-2445693', 'Av. Las Delicias, Maracay', 'F', 'baldomerovilalta@example.org', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C077', 'Eva del SolÃ©', 'V-18182595', '0424-4521241', 'Av. Lara, Barquisimeto', 'M', 'bayoncelestino@example.org', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C078', 'Evelia NarvÃ¡ez Rivas', 'V-12190641', '0416-9632538', 'Av. Bolivar, Caracas', 'F', 'norberto38@example.com', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C079', 'Yago de Frutos', 'V-25150332', '0212-2817283', 'Av. Lara, Barquisimeto', 'M', 'jgaya@example.net', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C080', 'Odalis Rivero Cerdá', 'V-10098526', '0412-7267916', 'Av. Francisco de Miranda, Caracas', 'F', 'atienzajordi@example.com', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C080', 'Odalis Rivero CerdÃ¡', 'V-10098526', '0412-7267916', 'Av. Francisco de Miranda, Caracas', 'F', 'atienzajordi@example.com', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C081', 'Nydia Ramis', 'V-5765230', '0416-3320610', 'Av. Lara, Barquisimeto', 'M', 'asuncion46@example.com', 'SUC03');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C082', 'Belén Machado Goñi', 'V-8097844', '0426-7399073', 'Av. Francisco de Miranda, Caracas', 'M', 'atilio17@example.net', 'SUC03');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C082', 'BelÃ©n Machado GoÃ±i', 'V-8097844', '0426-7399073', 'Av. Francisco de Miranda, Caracas', 'M', 'atilio17@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C083', 'Domitila Larrea Vendrell', 'V-16333974', '0414-6040713', 'Calle 72, Maracaibo', 'M', 'estebanazahara@example.org', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C084', 'Teobaldo de Aranda', 'V-9315993', '0412-8740336', 'Av. Lara, Barquisimeto', 'F', 'celiaquintana@example.com', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C085', 'Heraclio Aller Ureña', 'V-25920116', '0414-3445205', 'Urb. El Trigal, Valencia', 'M', 'eroig@example.net', 'SUC01');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C085', 'Heraclio Aller UreÃ±a', 'V-25920116', '0414-3445205', 'Urb. El Trigal, Valencia', 'M', 'eroig@example.net', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C086', 'Consuela Murillo Campos', 'V-28937554', '0416-7979129', 'Urb. El Trigal, Valencia', 'F', 'teresita52@example.com', 'SUC01');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C087', 'Eloísa Mir Barral', 'V-30242351', '0212-1062767', 'Calle 72, Maracaibo', 'M', 'lescalona@example.org', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C088', 'Estrella Chacón Arévalo', 'V-20842558', '0424-5449480', 'Av. Francisco de Miranda, Caracas', 'F', 'maria-pilarvendrell@example.com', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C087', 'EloÃ­sa Mir Barral', 'V-30242351', '0212-1062767', 'Calle 72, Maracaibo', 'M', 'lescalona@example.org', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C088', 'Estrella ChacÃ³n ArÃ©valo', 'V-20842558', '0424-5449480', 'Av. Francisco de Miranda, Caracas', 'F', 'maria-pilarvendrell@example.com', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C089', 'Basilio Luz', 'V-9652281', '0412-9606474', 'Calle 72, Maracaibo', 'M', 'jenaro41@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C090', 'Carlito Morante Zamora', 'V-10379352', '0414-5692146', 'Av. Francisco de Miranda, Caracas', 'M', 'alearmengol@example.net', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C091', 'Tania Jara Godoy', 'V-5569646', '0416-7597336', 'Av. Las Delicias, Maracay', 'F', 'segismundo11@example.net', 'SUC01');
@@ -241,7 +255,7 @@ INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo,
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C095', 'Cruz Marquez', 'V-9880942', '0426-5219080', 'Av. Francisco de Miranda, Caracas', 'M', 'lladosusanita@example.org', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C096', 'Maite Puga Isern', 'V-27088306', '0414-8002715', 'Av. Lara, Barquisimeto', 'F', 'guadalupesuarez@example.org', 'SUC01');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C097', 'Manuela Francisco', 'V-13508811', '0426-2212967', 'Urb. El Trigal, Valencia', 'F', 'maria-luisa60@example.com', 'SUC02');
-INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C098', 'Zoraida Asensio Cerdá', 'V-22942673', '0414-5856495', 'Calle 72, Maracaibo', 'F', 'olimpiaballester@example.org', 'SUC02');
+INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C098', 'Zoraida Asensio CerdÃ¡', 'V-22942673', '0414-5856495', 'Calle 72, Maracaibo', 'F', 'olimpiaballester@example.org', 'SUC02');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C099', 'Telmo Herranz Escalona', 'V-17993369', '0426-2466694', 'Av. Bolivar, Caracas', 'M', 'gtolosa@example.net', 'SUC03');
 INSERT INTO CLIENTE (cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal) VALUES ('C100', 'Delfina de Colomer', 'V-9917217', '0414-2993786', 'Av. Francisco de Miranda, Caracas', 'F', 'elisabet14@example.org', 'SUC01');
 
@@ -253,66 +267,66 @@ INSERT INTO EVALUACION_SERVICIO (cod_evaluacion_servicio, nb_descripcion) VALUES
 INSERT INTO EVALUACION_SERVICIO (cod_evaluacion_servicio, nb_descripcion) VALUES ('E5', 'Excelente');
 
 -- 8. RECOMIENDA
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C009', 'E1', 'P03', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C061', 'E4', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C064', 'E4', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C090', 'E4', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C065', 'E1', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C074', 'E3', 'P03', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C071', 'E1', 'P03', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C081', 'E2', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C018', 'E3', 'P04', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C099', 'E3', 'P04', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C017', 'E1', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C084', 'E2', 'P02', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C078', 'E5', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C076', 'E4', 'P01', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C087', 'E5', 'P01', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C075', 'E1', 'P03', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C024', 'E4', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C086', 'E2', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C029', 'E4', 'P04', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C060', 'E5', 'P01', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C033', 'E1', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C042', 'E3', 'P03', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C041', 'E4', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C049', 'E1', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C039', 'E1', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C070', 'E3', 'P04', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C058', 'E1', 'P04', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C027', 'E5', 'P03', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C047', 'E1', 'P02', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C016', 'E2', 'P04', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C097', 'E2', 'P04', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C092', 'E3', 'P04', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C062', 'E1', 'P02', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C034', 'E5', 'P01', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C068', 'E3', 'P01', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C043', 'E3', 'P01', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C091', 'E5', 'P04', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C059', 'E2', 'P02', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C006', 'E2', 'P04', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C055', 'E3', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C021', 'E2', 'P03', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C001', 'E3', 'P03', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C053', 'E4', 'P03', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C095', 'E3', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C073', 'E2', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C072', 'E3', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C032', 'E1', 'P02', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C026', 'E1', 'P04', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C083', 'E3', 'P01', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C012', 'E2', 'P04', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C085', 'E1', 'P02', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C013', 'E1', 'P04', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C048', 'E5', 'P01', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C098', 'E2', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C088', 'E1', 'P01', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C100', 'E3', 'P04', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C082', 'E5', 'P01', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C022', 'E5', 'P02', 'SI');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C093', 'E2', 'P03', 'NO');
-INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('C054', 'E4', 'P02', 'SI');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C009', 'E1', 'P03', 'NO', '2024-08-11');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C061', 'E4', 'P02', 'SI', '2026-02-16');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C064', 'E4', 'P02', 'SI', '2025-07-11');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C090', 'E4', 'P02', 'SI', '2025-10-07');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C065', 'E1', 'P01', 'NO', '2026-06-12');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C074', 'E3', 'P03', 'SI', '2024-05-01');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C071', 'E1', 'P03', 'NO', '2024-01-21');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C081', 'E2', 'P01', 'NO', '2025-12-09');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C018', 'E3', 'P04', 'SI', '2026-05-27');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C099', 'E3', 'P04', 'SI', '2025-12-20');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C017', 'E1', 'P01', 'NO', '2024-06-16');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C084', 'E2', 'P02', 'NO', '2024-01-10');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C078', 'E5', 'P02', 'SI', '2025-04-08');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C076', 'E4', 'P01', 'SI', '2025-11-05');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C087', 'E5', 'P01', 'SI', '2024-02-21');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C075', 'E1', 'P03', 'NO', '2024-01-27');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C024', 'E4', 'P02', 'SI', '2024-02-29');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C086', 'E2', 'P01', 'NO', '2026-03-26');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C029', 'E4', 'P04', 'SI', '2024-02-02');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C060', 'E5', 'P01', 'SI', '2025-06-06');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C033', 'E1', 'P01', 'NO', '2024-06-24');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C042', 'E3', 'P03', 'SI', '2025-09-26');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C041', 'E4', 'P02', 'SI', '2025-07-19');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C049', 'E1', 'P01', 'NO', '2026-12-09');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C039', 'E1', 'P01', 'NO', '2025-07-28');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C070', 'E3', 'P04', 'SI', '2026-03-04');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C058', 'E1', 'P04', 'NO', '2026-10-12');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C027', 'E5', 'P03', 'SI', '2026-09-05');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C047', 'E1', 'P02', 'NO', '2025-12-14');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C016', 'E2', 'P04', 'NO', '2026-11-17');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C097', 'E2', 'P04', 'NO', '2025-08-15');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C092', 'E3', 'P04', 'SI', '2024-03-06');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C062', 'E1', 'P02', 'NO', '2025-08-22');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C034', 'E5', 'P01', 'SI', '2024-11-03');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C068', 'E3', 'P01', 'SI', '2024-04-27');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C043', 'E3', 'P01', 'SI', '2025-06-10');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C091', 'E5', 'P04', 'SI', '2025-08-12');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C059', 'E2', 'P02', 'NO', '2026-05-23');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C006', 'E2', 'P04', 'NO', '2024-12-14');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C055', 'E3', 'P02', 'SI', '2026-05-12');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C021', 'E2', 'P03', 'NO', '2025-09-18');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C001', 'E3', 'P03', 'SI', '2026-04-01');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C053', 'E4', 'P03', 'SI', '2024-07-07');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C095', 'E3', 'P02', 'SI', '2024-11-26');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C073', 'E2', 'P01', 'NO', '2026-02-13');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C072', 'E3', 'P02', 'SI', '2025-01-15');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C032', 'E1', 'P02', 'NO', '2026-08-05');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C026', 'E1', 'P04', 'NO', '2025-12-31');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C083', 'E3', 'P01', 'SI', '2026-11-04');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C012', 'E2', 'P04', 'NO', '2024-01-09');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C085', 'E1', 'P02', 'NO', '2026-06-06');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C013', 'E1', 'P04', 'NO', '2026-08-27');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C048', 'E5', 'P01', 'SI', '2024-07-15');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C098', 'E2', 'P01', 'NO', '2024-05-07');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C088', 'E1', 'P01', 'NO', '2024-07-21');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C100', 'E3', 'P04', 'SI', '2025-11-15');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C082', 'E5', 'P01', 'SI', '2024-07-31');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C022', 'E5', 'P02', 'SI', '2025-08-02');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C093', 'E2', 'P03', 'NO', '2024-03-12');
+INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('C054', 'E4', 'P02', 'SI', '2024-04-10');
 
 -- 9. CONTRATO
 INSERT INTO CONTRATO (nro_contrato, descrip_contrato) VALUES ('CT-0001', 'Contrato de poliza 1 para asegurado');
@@ -667,6 +681,21 @@ INSERT INTO REGISTRO_SINIESTRO (nro_siniestro, nro_contrato, fecha_siniestro, fe
 INSERT INTO REGISTRO_SINIESTRO (nro_siniestro, nro_contrato, fecha_siniestro, fecha_respuesta, id_rechazo, monto_reconocido, monto_solicitado) VALUES ('SIN-01', 'CT-0048', '2024-03-15', '2024-03-21', 'NO', 4273.75, 4273.75);
 INSERT INTO REGISTRO_SINIESTRO (nro_siniestro, nro_contrato, fecha_siniestro, fecha_respuesta, id_rechazo, monto_reconocido, monto_solicitado) VALUES ('SIN-04', 'CT-0020', '2026-03-09', '2026-04-02', 'SI', 0.0, 2043.24);
 
+-- 13. METAS
+INSERT INTO METAS (annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES
+(2024, 'P01', 20, 10, 50000.00, '2024-01-01', '2024-12-31'),
+(2024, 'P02', 25, 12, 60000.00, '2024-01-01', '2024-12-31'),
+(2024, 'P03', 18, 8, 45000.00, '2024-01-01', '2024-12-31'),
+(2024, 'P04', 22, 11, 55000.00, '2024-01-01', '2024-12-31'),
+(2025, 'P01', 25, 12, 60000.00, '2025-01-01', '2025-12-31'),
+(2025, 'P02', 30, 15, 72000.00, '2025-01-01', '2025-12-31'),
+(2025, 'P03', 22, 10, 54000.00, '2025-01-01', '2025-12-31'),
+(2025, 'P04', 28, 14, 66000.00, '2025-01-01', '2025-12-31'),
+(2026, 'P01', 30, 15, 70000.00, '2026-01-01', '2026-12-31'),
+(2026, 'P02', 35, 18, 84000.00, '2026-01-01', '2026-12-31'),
+(2026, 'P03', 26, 12, 63000.00, '2026-01-01', '2026-12-31'),
+(2026, 'P04', 32, 16, 77000.00, '2026-01-01', '2026-12-31');
+
 
 -- =========================================================================
 -- FASE C: MODELO DIMENSIONAL (DATA WAREHOUSE)
@@ -674,7 +703,7 @@ INSERT INTO REGISTRO_SINIESTRO (nro_siniestro, nro_contrato, fecha_siniestro, fe
 CREATE SCHEMA "SEGURO_DW_G27797047";
 SET search_path TO "SEGURO_DW_G27797047";
 
--- Creación y selección del esquema del Data Warehouse
+-- CreaciÃ³n y selecciÃ³n del esquema del Data Warehouse
 CREATE SCHEMA IF NOT EXISTS "SEGURO_DW_G27797047";
 SET search_path TO "SEGURO_DW_G27797047";
 
@@ -697,7 +726,7 @@ CREATE TABLE DIM_TIEMPO (
 -- DIM_CLIENTE
 CREATE TABLE DIM_CLIENTE (
     SK_DIM_CLIENTE SERIAL PRIMARY KEY,
-    COD_CLIENTE VARCHAR(10) UNIQUE NOT NULL, -- Clave Natural con restricción UNIQUE para Carga Incremental
+    COD_CLIENTE VARCHAR(10) UNIQUE NOT NULL, -- Clave Natural con restricciÃ³n UNIQUE para Carga Incremental
     NB_CLIENTE VARCHAR(150),
     CI_RIF VARCHAR(20),
     TELEFONO VARCHAR(20),
@@ -709,7 +738,7 @@ CREATE TABLE DIM_CLIENTE (
 -- DIM_PRODUCTO
 CREATE TABLE DIM_PRODUCTO (
     SK_DIM_PRODUCTO SERIAL PRIMARY KEY,
-    COD_PRODUCTO VARCHAR(10) UNIQUE NOT NULL, -- Clave Natural con restricción UNIQUE para Carga Incremental
+    COD_PRODUCTO VARCHAR(10) UNIQUE NOT NULL, -- Clave Natural con restricciÃ³n UNIQUE para Carga Incremental
     NB_PRODUCTO VARCHAR(100),
     DESCRIP_PRODUCTO TEXT,
     COD_TIPO_PRODUCTO VARCHAR(10),
@@ -720,14 +749,14 @@ CREATE TABLE DIM_PRODUCTO (
 -- DIM_CONTRATO
 CREATE TABLE DIM_CONTRATO (
     SK_DIM_CONTRATO SERIAL PRIMARY KEY,
-    NRO_CONTRATO VARCHAR(20) UNIQUE NOT NULL, -- Clave Natural con restricción UNIQUE para Carga Incremental
+    NRO_CONTRATO VARCHAR(20) UNIQUE NOT NULL, -- Clave Natural con restricciÃ³n UNIQUE para Carga Incremental
     DESCRIP_CONTRATO TEXT
 );
 
 -- DIM_SUCURSAL
 CREATE TABLE DIM_SUCURSAL (
     SK_DIM_SUCURSAL SERIAL PRIMARY KEY,
-    COD_SUCURSAL VARCHAR(10) UNIQUE NOT NULL, -- Clave Natural con restricción UNIQUE para Carga Incremental
+    COD_SUCURSAL VARCHAR(10) UNIQUE NOT NULL, -- Clave Natural con restricciÃ³n UNIQUE para Carga Incremental
     NB_SUCURSAL VARCHAR(100),
     COD_CIUDAD VARCHAR(10),
     NB_CIUDAD VARCHAR(100),
@@ -738,21 +767,21 @@ CREATE TABLE DIM_SUCURSAL (
 -- DIM_ESTADO_CONTRATO
 CREATE TABLE DIM_ESTADO_CONTRATO (
     SK_DIM_ESTADO SERIAL PRIMARY KEY,
-    COD_ESTADO CHAR(2) UNIQUE, -- Clave Natural con restricción UNIQUE para Carga Incremental
+    COD_ESTADO CHAR(2) UNIQUE, -- Clave Natural con restricciÃ³n UNIQUE para Carga Incremental
     DESCRIP_ESTADO VARCHAR(50)
 );
 
 -- DIM_EVALUACION_SERVICIO
 CREATE TABLE DIM_EVALUACION_SERVICIO (
     SK_DIM_EVALUACION SERIAL PRIMARY KEY,
-    COD_EVALUACION VARCHAR(10) UNIQUE NOT NULL, -- Clave Natural con restricción UNIQUE para Carga Incremental
+    COD_EVALUACION VARCHAR(10) UNIQUE NOT NULL, -- Clave Natural con restricciÃ³n UNIQUE para Carga Incremental
     NB_DESCRIP VARCHAR(50)
 );
 
 -- DIM_SINIESTRO
 CREATE TABLE DIM_SINIESTRO (
     SK_DIM_SINIESTRO SERIAL PRIMARY KEY,
-    NRO_SINIESTRO VARCHAR(20) UNIQUE NOT NULL, -- Clave Natural con restricción UNIQUE para Carga Incremental
+    NRO_SINIESTRO VARCHAR(20) UNIQUE NOT NULL, -- Clave Natural con restricciÃ³n UNIQUE para Carga Incremental
     DESCRIP_SINIESTRO TEXT
 );
 
@@ -768,11 +797,13 @@ CREATE TABLE FACT_REGISTRO_CONTRATO (
     SK_DIM_CONTRATO INTEGER REFERENCES DIM_CONTRATO(SK_DIM_CONTRATO),
     SK_DIM_PRODUCTO INTEGER REFERENCES DIM_PRODUCTO(SK_DIM_PRODUCTO),
     SK_DIM_ESTADO_CONTRATO INTEGER REFERENCES DIM_ESTADO_CONTRATO(SK_DIM_ESTADO),
+    SK_DIM_SUCURSAL INTEGER REFERENCES DIM_SUCURSAL(SK_DIM_SUCURSAL),
     MONTO REAL,
     CANTIDAD INTEGER,
     CANTIDAD_CLIENTE INTEGER,
     CANTIDAD_PRODUCTO INTEGER,
-    CANTIDAD_CONTRATO INTEGER
+    CANTIDAD_CONTRATO INTEGER,
+    PRIMARY KEY (SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_PRODUCTO)
 );
 
 -- FACT_REGISTRO_SINIESTRO
@@ -787,7 +818,8 @@ CREATE TABLE FACT_REGISTRO_SINIESTRO (
     CANTIDAD INTEGER,
     MONTO_RECONOCIDO REAL,
     MONTO_SOLICITADO REAL,
-    ID_RECHAZO CHAR(2)
+    ID_RECHAZO CHAR(2),
+    PRIMARY KEY (SK_FECHA_SINIESTRO, SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_SINIESTRO)
 );
 
 -- FACT_EVALUACION_SERVICIO
@@ -795,8 +827,10 @@ CREATE TABLE FACT_EVALUACION_SERVICIO (
     SK_DIM_CLIENTE INTEGER REFERENCES DIM_CLIENTE(SK_DIM_CLIENTE),
     SK_DIM_PRODUCTO INTEGER REFERENCES DIM_PRODUCTO(SK_DIM_PRODUCTO),
     SK_DIM_EVALUACION_SERVICIO INTEGER REFERENCES DIM_EVALUACION_SERVICIO(SK_DIM_EVALUACION),
+    SK_DIM_TIEMPO_FECHA_EVALUACION INTEGER REFERENCES DIM_TIEMPO(SK_DIM_TIEMPO),
     CANTIDAD INTEGER,
-    RECOMIENDA_AMIGO REAL
+    RECOMIENDA_AMIGO REAL,
+    PRIMARY KEY (SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_EVALUACION_SERVICIO, SK_DIM_TIEMPO_FECHA_EVALUACION)
 );
 
 -- FACT_METAS
@@ -808,10 +842,11 @@ CREATE TABLE FACT_METAS (
     SK_DIM_CONTRATO INTEGER REFERENCES DIM_CONTRATO(SK_DIM_CONTRATO),
     MONTO_META_INGRESO REAL,
     META_RENOVACION INTEGER,
-    META_ASEGURADOS INTEGER
+    META_ASEGURADOS INTEGER,
+    PRIMARY KEY (SK_DIM_FECHA_INICIO_META, SK_DIM_PRODUCTO, SK_DIM_CONTRATO)
 );
 -- =========================================================================
--- FASE D: POBLADO DE LA DIMENSIÓN TIEMPO
+-- FASE D: POBLADO DE LA DIMENSIÃ“N TIEMPO
 -- =========================================================================
 INSERT INTO "SEGURO_DW_G27797047".DIM_TIEMPO (
     SK_DIM_TIEMPO, COD_ANNIO, COD_MES, COD_DIA, DESC_MES, DESC_TRIMESTRE, DESC_SEMESTRE, FECHA_COMPLETA
@@ -826,7 +861,7 @@ SELECT
 FROM generate_series('2015-01-01'::date, '2030-12-31'::date, '1 day'::interval) as fecha;
 
 -- =========================================================================
--- FASE E: CREACIÓN DEL PROCEDIMIENTO ALMACENADO (ETL)
+-- FASE E: CREACIÃ“N DEL PROCEDIMIENTO ALMACENADO (ETL)
 -- =========================================================================
 
 CREATE OR REPLACE PROCEDURE actualizar_datawarehouse()
@@ -859,23 +894,41 @@ BEGIN
     SELECT nro_siniestro, descripcion_siniestro FROM "SEGURO_G27797047".SINIESTRO
     ON CONFLICT (NRO_SINIESTRO) DO UPDATE SET DESCRIP_SINIESTRO = EXCLUDED.DESCRIP_SINIESTRO;
 
-    -- >>> AQUI ESTA LA DIMENSION QUE FALTABA <<<
     INSERT INTO "SEGURO_DW_G27797047".DIM_EVALUACION_SERVICIO (COD_EVALUACION, NB_DESCRIP)
     SELECT cod_evaluacion_servicio, nb_descripcion FROM "SEGURO_G27797047".EVALUACION_SERVICIO
     ON CONFLICT (COD_EVALUACION) DO UPDATE SET NB_DESCRIP = EXCLUDED.NB_DESCRIP;
+
+    -- >>> DIMENSIÃ“N NUEVA AGREGADA <<<
+    INSERT INTO "SEGURO_DW_G27797047".DIM_ESTADO_CONTRATO (COD_ESTADO, DESCRIP_ESTADO) VALUES
+        ('AC', 'Activo'),
+        ('VE', 'Vencido'),
+        ('SU', 'Suspendido')
+    ON CONFLICT (COD_ESTADO) DO UPDATE SET DESCRIP_ESTADO = EXCLUDED.DESCRIP_ESTADO;
 
     -- ==========================================
     -- 2. CARGA DE TABLAS DE HECHOS (RELOAD)
     -- ==========================================
     
-    -- FACT_REGISTRO_CONTRATO
+    -- FACT_REGISTRO_CONTRATO (ACTUALIZADO CON LAS 11 COLUMNAS NUEVAS)
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO;
-    INSERT INTO "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO (SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_PRODUCTO, MONTO, CANTIDAD)
-    SELECT to_char(rc.fecha_inicio, 'YYYYMMDD')::integer, dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, dp.SK_DIM_PRODUCTO, rc.monto, 1
+    INSERT INTO "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO (
+        SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_TIEMPO_FECHA_FIN, SK_DIM_CLIENTE,
+        SK_DIM_CONTRATO, SK_DIM_PRODUCTO, SK_DIM_ESTADO_CONTRATO,
+        SK_DIM_SUCURSAL, MONTO, CANTIDAD, CANTIDAD_CLIENTE, CANTIDAD_PRODUCTO, CANTIDAD_CONTRATO
+    )
+    SELECT
+        to_char(rc.fecha_inicio, 'YYYYMMDD')::integer,
+        to_char(rc.fecha_fin, 'YYYYMMDD')::integer,
+        dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, dp.SK_DIM_PRODUCTO, de.SK_DIM_ESTADO,
+        dsuc.SK_DIM_SUCURSAL, rc.monto, 1, 1, 1, 1
     FROM "SEGURO_G27797047".REGISTRO_CONTRATO rc
     JOIN "SEGURO_DW_G27797047".DIM_CLIENTE dc ON rc.cod_cliente = dc.COD_CLIENTE
     JOIN "SEGURO_DW_G27797047".DIM_CONTRATO dcon ON rc.nro_contrato = dcon.NRO_CONTRATO
-    JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON rc.cod_producto = dp.COD_PRODUCTO;
+    JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON rc.cod_producto = dp.COD_PRODUCTO
+    LEFT JOIN "SEGURO_DW_G27797047".DIM_ESTADO_CONTRATO de
+        ON de.COD_ESTADO = CASE rc.estado_contrato WHEN 'activo' THEN 'AC' WHEN 'vencido' THEN 'VE' WHEN 'suspendido' THEN 'SU' END
+    JOIN "SEGURO_G27797047".CLIENTE c ON rc.cod_cliente = c.cod_cliente
+    JOIN "SEGURO_DW_G27797047".DIM_SUCURSAL dsuc ON c.cod_sucursal = dsuc.COD_SUCURSAL;
 
     -- FACT_REGISTRO_SINIESTRO
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_REGISTRO_SINIESTRO;
@@ -901,8 +954,13 @@ BEGIN
 
     -- FACT_EVALUACION_SERVICIO
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_EVALUACION_SERVICIO;
-    INSERT INTO "SEGURO_DW_G27797047".FACT_EVALUACION_SERVICIO (SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_EVALUACION_SERVICIO, CANTIDAD, RECOMIENDA_AMIGO)
-    SELECT dc.SK_DIM_CLIENTE, dp.SK_DIM_PRODUCTO, de.SK_DIM_EVALUACION, 1, CASE WHEN r.recomienda_amigo = 'SI' THEN 1.0 ELSE 0.0 END
+    INSERT INTO "SEGURO_DW_G27797047".FACT_EVALUACION_SERVICIO (
+        SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_EVALUACION_SERVICIO,
+        SK_DIM_TIEMPO_FECHA_EVALUACION, CANTIDAD, RECOMIENDA_AMIGO
+    )
+    SELECT dc.SK_DIM_CLIENTE, dp.SK_DIM_PRODUCTO, de.SK_DIM_EVALUACION,
+        to_char(r.fecha_evaluacion, 'YYYYMMDD')::integer, 1,
+        CASE WHEN r.recomienda_amigo = 'SI' THEN 1.0 ELSE 0.0 END
     FROM "SEGURO_G27797047".RECOMIENDA r
     JOIN "SEGURO_DW_G27797047".DIM_CLIENTE dc ON r.cod_cliente = dc.COD_CLIENTE
     JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON r.cod_producto = dp.COD_PRODUCTO
@@ -910,18 +968,25 @@ BEGIN
 
     -- FACT_METAS
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_METAS;
-    INSERT INTO "SEGURO_DW_G27797047".FACT_METAS (SK_DIM_FECHA_INICIO_META, SK_DIM_FECHA_FIN_META, SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_CONTRATO, MONTO_META_INGRESO, META_RENOVACION, META_ASEGURADOS)
-    SELECT 20260101, 20261231, dc.SK_DIM_CLIENTE, dp.SK_DIM_PRODUCTO, dc_cont.SK_DIM_CONTRATO, ROUND((RANDOM() * 5000 + 1000)::numeric, 2), FLOOR(RANDOM() * 5 + 1)::integer, FLOOR(RANDOM() * 10 + 2)::integer
-    FROM "SEGURO_DW_G27797047".DIM_CLIENTE dc
-    CROSS JOIN (SELECT SK_DIM_PRODUCTO FROM "SEGURO_DW_G27797047".DIM_PRODUCTO LIMIT 3) dp
-    CROSS JOIN (SELECT SK_DIM_CONTRATO FROM "SEGURO_DW_G27797047".DIM_CONTRATO LIMIT 3) dc_cont
+    INSERT INTO "SEGURO_DW_G27797047".FACT_METAS (
+        SK_DIM_FECHA_INICIO_META, SK_DIM_FECHA_FIN_META,
+        SK_DIM_PRODUCTO, SK_DIM_CONTRATO,
+        MONTO_META_INGRESO, META_RENOVACION, META_ASEGURADOS
+    )
+    SELECT
+        to_char(m.fecha_inicio, 'YYYYMMDD')::integer,
+        to_char(m.fecha_fin, 'YYYYMMDD')::integer,
+        dp.SK_DIM_PRODUCTO,
+        dcon.SK_DIM_CONTRATO,
+        m.meta_ingreso, m.meta_renovacion, m.meta_asegurados
+    FROM "SEGURO_G27797047".METAS m
+    JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON m.cod_producto = dp.COD_PRODUCTO
+    JOIN "SEGURO_DW_G27797047".DIM_CONTRATO dcon ON TRUE
     LIMIT 50;
 
 END;
 $$;
-
 -- =========================================================================
--- FASE F: EJECUCIÓN INICIAL DEL ETL
+-- FASE F: EJECUCIÃ“N INICIAL DEL ETL
 -- =========================================================================
--- Esto asegura que, apenas termine de correr el script, el Data Warehouse se llene automáticamente.
 CALL actualizar_datawarehouse();

@@ -1,3 +1,7 @@
+-- =========================================================================
+-- FASE A: MODELO TRANSACCIONAL (FUENTE)
+-- =========================================================================
+
 -- Creación y selección del esquema fuente
 CREATE SCHEMA IF NOT EXISTS "SEGURO_G27797047";
 SET search_path TO "SEGURO_G27797047";
@@ -57,11 +61,12 @@ CREATE TABLE EVALUACION_SERVICIO (
 
 -- 8. RECOMIENDA
 CREATE TABLE RECOMIENDA (
+    id_evaluacion SERIAL PRIMARY KEY,
     cod_cliente VARCHAR(10) REFERENCES CLIENTE(cod_cliente),
     cod_evaluacion_servicio VARCHAR(10) REFERENCES EVALUACION_SERVICIO(cod_evaluacion_servicio),
     cod_producto VARCHAR(10) REFERENCES PRODUCTO(cod_producto),
     recomienda_amigo VARCHAR(2) CHECK (recomienda_amigo IN ('SI', 'NO')),
-    PRIMARY KEY (cod_cliente, cod_producto)
+    fecha_evaluacion DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
 -- 9. CONTRATO
@@ -79,7 +84,7 @@ CREATE TABLE REGISTRO_CONTRATO (
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     monto REAL NOT NULL,
-    estado_contrato VARCHAR(20) CHECK (estado_contrato IN ('activo', 'vencido', 'suspendido'))
+    estado_contrato VARCHAR(20) NOT NULL CHECK (estado_contrato IN ('activo', 'vencido', 'suspendido'))
 );
 
 -- 11. SINIESTRO
@@ -98,4 +103,17 @@ CREATE TABLE REGISTRO_SINIESTRO (
     id_rechazo VARCHAR(2) CHECK (id_rechazo IN ('SI', 'NO')),
     monto_reconocido REAL,
     monto_solicitado REAL NOT NULL
+);
+
+-- 13. METAS
+CREATE TABLE METAS (
+    cod_meta SERIAL PRIMARY KEY,
+    annio INTEGER NOT NULL,
+    cod_producto VARCHAR(10) REFERENCES PRODUCTO(cod_producto),
+    meta_asegurados INTEGER NOT NULL,
+    meta_renovacion INTEGER NOT NULL,
+    meta_ingreso REAL NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    UNIQUE (annio, cod_producto)
 );

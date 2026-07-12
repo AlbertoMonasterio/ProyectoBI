@@ -90,7 +90,8 @@ for c in clientes_evaluando:
     cod_producto = random.choice(productos)[0]
     # Logica simple: si evalua bien (E3, E4, E5), recomienda.
     recomienda = 'SI' if cod_eval in ['E3', 'E4', 'E5'] else 'NO'
-    recomendaciones.append((cod_cliente, cod_eval, cod_producto, recomienda))
+    fecha_eval = fake.date_between(start_date='-2y', end_date='today')
+    recomendaciones.append((cod_cliente, cod_eval, cod_producto, recomienda, fecha_eval))
 
 # Generar 150 CONTRATOS y REGISTRO_CONTRATO
 contratos = []
@@ -135,6 +136,20 @@ for reg_c in contratos_con_siniestro:
     
     registros_siniestros.append((nro_siniestro, nro_contrato, fecha_siniestro, fecha_respuesta, id_rechazo, monto_reconocido, monto_solicitado))
 
+# Generar METAS anuales por producto (años 2019-2026, 4 productos)
+metas = []
+cod_meta_id = 1
+for annio in range(2019, 2027):  # 8 años
+    for producto in productos:
+        cod_producto = producto[0]
+        meta_asegurados = random.randint(15, 40)
+        meta_renovacion = random.randint(8, 20)
+        meta_ingreso = round(random.uniform(30000.0, 80000.0), 2)
+        fecha_inicio = f"{annio}-01-01"
+        fecha_fin = f"{annio}-12-31"
+        metas.append((cod_meta_id, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin))
+        cod_meta_id += 1
+
 # ==========================================
 # 3. ESCRITURA DEL ARCHIVO SQL
 # ==========================================
@@ -171,7 +186,7 @@ with open('datos_prueba.sql', 'w', encoding='utf-8') as f:
 
     f.write("\n-- 8. RECOMIENDA\n")
     for row in recomendaciones:
-        f.write(f"INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo) VALUES ('{row[0]}', '{row[1]}', '{row[2]}', '{row[3]}');\n")
+        f.write(f"INSERT INTO RECOMIENDA (cod_cliente, cod_evaluacion_servicio, cod_producto, recomienda_amigo, fecha_evaluacion) VALUES ('{row[0]}', '{row[1]}', '{row[2]}', '{row[3]}', '{row[4]}');\n")
 
     f.write("\n-- 9. CONTRATO\n")
     for row in contratos:
@@ -189,4 +204,8 @@ with open('datos_prueba.sql', 'w', encoding='utf-8') as f:
     for row in registros_siniestros:
         f.write(f"INSERT INTO REGISTRO_SINIESTRO (nro_siniestro, nro_contrato, fecha_siniestro, fecha_respuesta, id_rechazo, monto_reconocido, monto_solicitado) VALUES ('{row[0]}', '{row[1]}', '{row[2]}', '{row[3]}', '{row[4]}', {row[5]}, {row[6]});\n")
 
-print("Archivo datos_prueba.sql generado exitosamente con el modelo relacional completo.")
+    f.write("\n-- 13. METAS\n")
+    for row in metas:
+        f.write(f"INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES ({row[0]}, {row[1]}, '{row[2]}', {row[3]}, {row[4]}, {row[5]}, '{row[6]}', '{row[7]}');\n")
+
+print("Archivo datos_prueba.sql generado exitosamente con 13 tablas (incluyendo METAS).")

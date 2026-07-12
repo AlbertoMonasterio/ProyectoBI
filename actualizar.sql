@@ -5,7 +5,7 @@ BEGIN
     -- ==========================================
     -- 1. CARGA INCREMENTAL DE DIMENSIONES (UPSERT)
     -- ==========================================
-    
+
     INSERT INTO "SEGURO_DW_G27797047".DIM_CLIENTE (COD_CLIENTE, NB_CLIENTE, CI_RIF, TELEFONO, DIRECCION, SEXO, EMAIL)
     SELECT cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email FROM "SEGURO_G27797047".CLIENTE
     ON CONFLICT (COD_CLIENTE) DO UPDATE SET NB_CLIENTE = EXCLUDED.NB_CLIENTE, TELEFONO = EXCLUDED.TELEFONO, DIRECCION = EXCLUDED.DIRECCION, EMAIL = EXCLUDED.EMAIL;
@@ -32,29 +32,33 @@ BEGIN
     SELECT cod_evaluacion_servicio, nb_descripcion FROM "SEGURO_G27797047".EVALUACION_SERVICIO
     ON CONFLICT (COD_EVALUACION) DO UPDATE SET NB_DESCRIP = EXCLUDED.NB_DESCRIP;
 
-    -- >>> DIMENSIÓN NUEVA AGREGADA <<<
-    INSERT INTO "SEGURO_DW_G27797047".DIM_ESTADO_CONTRATO (COD_ESTADO, DESCRIP_ESTADO) VALUES
-        ('AC', 'Activo'),
-        ('VE', 'Vencido'),
-        ('SU', 'Suspendido')
+    -- BUG 1 FIX: Carga incremental de DIM_ESTADO_CONTRATO (catálogo fijo de estados)
+    -- Esta dimensión nunca se poblaba, dejando SK_DIM_ESTADO_CONTRATO siempre NULL en la fact.
+    INSERT INTO "SEGURO_DW_G27797047".DIM_ESTADO_CONTRATO (COD_ESTADO, DESCRIP_ESTADO)
+    VALUES ('AC', 'activo'), ('VE', 'vencido'), ('SU', 'suspendido')
     ON CONFLICT (COD_ESTADO) DO UPDATE SET DESCRIP_ESTADO = EXCLUDED.DESCRIP_ESTADO;
 
     -- ==========================================
     -- 2. CARGA DE TABLAS DE HECHOS (RELOAD)
     -- ==========================================
-    
-    -- FACT_REGISTRO_CONTRATO (ACTUALIZADO CON LAS 11 COLUMNAS NUEVAS)
+
+    -- FACT_REGISTRO_CONTRATO
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO;
+    -- BUG 1 + BUG 2 FIX: Se agregan SK_DIM_TIEMPO_FECHA_FIN y SK_DIM_ESTADO_CONTRATO,
+    -- que faltaban en el INSERT original.
     INSERT INTO "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO (
-        SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_TIEMPO_FECHA_FIN, SK_DIM_CLIENTE,
-        SK_DIM_CONTRATO, SK_DIM_PRODUCTO, SK_DIM_ESTADO_CONTRATO,
-        SK_DIM_SUCURSAL, MONTO, CANTIDAD, CANTIDAD_CLIENTE, CANTIDAD_PRODUCTO, CANTIDAD_CONTRATO
+        SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_TIEMPO_FECHA_FIN,
+        SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_PRODUCTO,
+        SK_DIM_ESTADO_CONTRATO, MONTO, CANTIDAD,
+        CANTIDAD_CLIENTE, CANTIDAD_PRODUCTO, CANTIDAD_CONTRATO
     )
     SELECT
         to_char(rc.fecha_inicio, 'YYYYMMDD')::integer,
-        to_char(rc.fecha_fin, 'YYYYMMDD')::integer,
-        dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, dp.SK_DIM_PRODUCTO, de.SK_DIM_ESTADO,
-        dsuc.SK_DIM_SUCURSAL, rc.monto, 1, 1, 1, 1
+        to_char(rc.fecha_fin,    'YYYYMMDD')::integer,
+        dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, dp.SK_DIM_PRODUCTO,
+        de.SK_DIM_ESTADO,
+        rc.monto, 1,
+        1, 1, 1
     FROM "SEGURO_G27797047".REGISTRO_CONTRATO rc
     JOIN "SEGURO_DW_G27797047".DIM_CLIENTE dc ON rc.cod_cliente = dc.COD_CLIENTE
     JOIN "SEGURO_DW_G27797047".DIM_CONTRATO dcon ON rc.nro_contrato = dcon.NRO_CONTRATO
@@ -67,15 +71,19 @@ BEGIN
     -- FACT_REGISTRO_SINIESTRO
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_REGISTRO_SINIESTRO;
     INSERT INTO "SEGURO_DW_G27797047".FACT_REGISTRO_SINIESTRO (
-        SK_FECHA_SINIESTRO, SK_FECHA_RESPUESTA, SK_DIM_CLIENTE, SK_DIM_CONTRATO, 
-        SK_DIM_SUCURSAL, SK_DIM_PRODUCTO, SK_DIM_SINIESTRO, CANTIDAD, 
+        SK_FECHA_SINIESTRO, SK_FECHA_RESPUESTA, SK_DIM_CLIENTE, SK_DIM_CONTRATO,
+        SK_DIM_SUCURSAL, SK_DIM_PRODUCTO, SK_DIM_SINIESTRO, CANTIDAD,
         MONTO_RECONOCIDO, MONTO_SOLICITADO, ID_RECHAZO
     )
-    SELECT 
-        to_char(rs.fecha_siniestro, 'YYYYMMDD')::integer, 
-        to_char(rs.fecha_respuesta, 'YYYYMMDD')::integer,
-        dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, ds.SK_DIM_SUCURSAL, 
-        dp.SK_DIM_PRODUCTO, dsin.SK_DIM_SINIESTRO, 1, 
+    SELECT
+        to_char(rs.fecha_siniestro, 'YYYYMMDD')::integer,
+        -- BUG 4 FIX: fecha_respuesta es nullable en la fuente; se usa COALESCE para
+        -- evitar que un NULL rompa la FK: se mapea a NULL explícitamente (valor permitido
+        -- por PostgreSQL en columnas con FK). Los siniestros sin respuesta quedan con
+        -- SK_FECHA_RESPUESTA = NULL, filtrables en el dashboard como "pendientes".
+        COALESCE(to_char(rs.fecha_respuesta, 'YYYYMMDD')::integer, NULL),
+        dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, ds.SK_DIM_SUCURSAL,
+        dp.SK_DIM_PRODUCTO, dsin.SK_DIM_SINIESTRO, 1,
         rs.monto_reconocido, rs.monto_solicitado, rs.id_rechazo
     FROM "SEGURO_G27797047".REGISTRO_SINIESTRO rs
     JOIN "SEGURO_G27797047".REGISTRO_CONTRATO rc ON rs.nro_contrato = rc.nro_contrato

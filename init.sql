@@ -718,7 +718,7 @@ CREATE TABLE DIM_TIEMPO (
     COD_MES INTEGER,
     COD_DIA INTEGER,
     DESC_MES VARCHAR(50),
-    DESC_TRIMESTRE VARCHAR(10),
+    DESC_TRIMESTRE VARCHAR(15),
     DESC_SEMESTRE VARCHAR(10),
     FECHA_COMPLETA DATE
 );
@@ -857,7 +857,8 @@ SELECT
         WHEN 1 THEN 'Enero' WHEN 2 THEN 'Febrero' WHEN 3 THEN 'Marzo' WHEN 4 THEN 'Abril' WHEN 5 THEN 'Mayo' WHEN 6 THEN 'Junio'
         WHEN 7 THEN 'Julio' WHEN 8 THEN 'Agosto' WHEN 9 THEN 'Septiembre' WHEN 10 THEN 'Octubre' WHEN 11 THEN 'Noviembre' WHEN 12 THEN 'Diciembre'
     END,
-    'Trim. ' || extract(quarter from fecha), CASE WHEN extract(month from fecha) <= 6 THEN 'Semestre 1' ELSE 'Semestre 2' END, fecha
+    -- BUG 6 FIX: Unificado a 'Trimestre ' para coincidir con DimTiempo.sql
+    'Trimestre ' || extract(quarter from fecha), CASE WHEN extract(month from fecha) <= 6 THEN 'Semestre 1' ELSE 'Semestre 2' END, fecha
 FROM generate_series('2015-01-01'::date, '2030-12-31'::date, '1 day'::interval) as fecha;
 
 -- =========================================================================

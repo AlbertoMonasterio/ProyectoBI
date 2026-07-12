@@ -682,27 +682,43 @@ INSERT INTO REGISTRO_SINIESTRO (nro_siniestro, nro_contrato, fecha_siniestro, fe
 INSERT INTO REGISTRO_SINIESTRO (nro_siniestro, nro_contrato, fecha_siniestro, fecha_respuesta, id_rechazo, monto_reconocido, monto_solicitado) VALUES ('SIN-04', 'CT-0020', '2026-03-09', '2026-04-02', 'SI', 0.0, 2043.24);
 
 -- 13. METAS
-INSERT INTO METAS (annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES
-(2024, 'P01', 20, 10, 50000.00, '2024-01-01', '2024-12-31'),
-(2024, 'P02', 25, 12, 60000.00, '2024-01-01', '2024-12-31'),
-(2024, 'P03', 18, 8, 45000.00, '2024-01-01', '2024-12-31'),
-(2024, 'P04', 22, 11, 55000.00, '2024-01-01', '2024-12-31'),
-(2025, 'P01', 25, 12, 60000.00, '2025-01-01', '2025-12-31'),
-(2025, 'P02', 30, 15, 72000.00, '2025-01-01', '2025-12-31'),
-(2025, 'P03', 22, 10, 54000.00, '2025-01-01', '2025-12-31'),
-(2025, 'P04', 28, 14, 66000.00, '2025-01-01', '2025-12-31'),
-(2026, 'P01', 30, 15, 70000.00, '2026-01-01', '2026-12-31'),
-(2026, 'P02', 35, 18, 84000.00, '2026-01-01', '2026-12-31'),
-(2026, 'P03', 26, 12, 63000.00, '2026-01-01', '2026-12-31'),
-(2026, 'P04', 32, 16, 77000.00, '2026-01-01', '2026-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (1, 2019, 'P01', 39, 13, 77730.06, '2019-01-01', '2019-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (2, 2019, 'P02', 40, 20, 31076.69, '2019-01-01', '2019-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (3, 2019, 'P03', 23, 10, 70567.82, '2019-01-01', '2019-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (4, 2019, 'P04', 34, 10, 53464.37, '2019-01-01', '2019-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (5, 2020, 'P01', 34, 18, 31595.11, '2020-01-01', '2020-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (6, 2020, 'P02', 29, 15, 40977.63, '2020-01-01', '2020-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (7, 2020, 'P03', 38, 13, 38247.29, '2020-01-01', '2020-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (8, 2020, 'P04', 15, 15, 46233.32, '2020-01-01', '2020-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (9, 2021, 'P01', 33, 16, 54368.94, '2021-01-01', '2021-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (10, 2021, 'P02', 39, 9, 44429.65, '2021-01-01', '2021-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (11, 2021, 'P03', 21, 15, 44587.51, '2021-01-01', '2021-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (12, 2021, 'P04', 17, 20, 67061.49, '2021-01-01', '2021-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (13, 2022, 'P01', 36, 13, 41827.85, '2022-01-01', '2022-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (14, 2022, 'P02', 15, 12, 43233.22, '2022-01-01', '2022-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (15, 2022, 'P03', 17, 20, 34526.48, '2022-01-01', '2022-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (16, 2022, 'P04', 33, 9, 68211.82, '2022-01-01', '2022-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (17, 2023, 'P01', 24, 9, 62324.97, '2023-01-01', '2023-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (18, 2023, 'P02', 27, 14, 54310.34, '2023-01-01', '2023-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (19, 2023, 'P03', 17, 14, 71056.42, '2023-01-01', '2023-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (20, 2023, 'P04', 17, 9, 77289.03, '2023-01-01', '2023-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (21, 2024, 'P01', 26, 10, 36294.11, '2024-01-01', '2024-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (22, 2024, 'P02', 27, 15, 70220.55, '2024-01-01', '2024-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (23, 2024, 'P03', 16, 9, 48782.11, '2024-01-01', '2024-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (24, 2024, 'P04', 16, 14, 74594.06, '2024-01-01', '2024-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (25, 2025, 'P01', 29, 16, 55199.4, '2025-01-01', '2025-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (26, 2025, 'P02', 33, 11, 63206.9, '2025-01-01', '2025-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (27, 2025, 'P03', 17, 11, 70774.04, '2025-01-01', '2025-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (28, 2025, 'P04', 21, 19, 35715.07, '2025-01-01', '2025-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (29, 2026, 'P01', 23, 10, 62002.99, '2026-01-01', '2026-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (30, 2026, 'P02', 31, 19, 62923.3, '2026-01-01', '2026-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (31, 2026, 'P03', 19, 9, 60741.08, '2026-01-01', '2026-12-31');
+INSERT INTO METAS (cod_meta, annio, cod_producto, meta_asegurados, meta_renovacion, meta_ingreso, fecha_inicio, fecha_fin) VALUES (32, 2026, 'P04', 23, 14, 69638.38, '2026-01-01', '2026-12-31');
 
 
 -- =========================================================================
 -- FASE C: MODELO DIMENSIONAL (DATA WAREHOUSE)
 -- =========================================================================
-CREATE SCHEMA "SEGURO_DW_G27797047";
-SET search_path TO "SEGURO_DW_G27797047";
-
 -- CreaciÃ³n y selecciÃ³n del esquema del Data Warehouse
 CREATE SCHEMA IF NOT EXISTS "SEGURO_DW_G27797047";
 SET search_path TO "SEGURO_DW_G27797047";
@@ -837,13 +853,11 @@ CREATE TABLE FACT_EVALUACION_SERVICIO (
 CREATE TABLE FACT_METAS (
     SK_DIM_FECHA_INICIO_META INTEGER REFERENCES DIM_TIEMPO(SK_DIM_TIEMPO),
     SK_DIM_FECHA_FIN_META INTEGER REFERENCES DIM_TIEMPO(SK_DIM_TIEMPO),
-    SK_DIM_CLIENTE INTEGER REFERENCES DIM_CLIENTE(SK_DIM_CLIENTE),
     SK_DIM_PRODUCTO INTEGER REFERENCES DIM_PRODUCTO(SK_DIM_PRODUCTO),
-    SK_DIM_CONTRATO INTEGER REFERENCES DIM_CONTRATO(SK_DIM_CONTRATO),
     MONTO_META_INGRESO REAL,
     META_RENOVACION INTEGER,
     META_ASEGURADOS INTEGER,
-    PRIMARY KEY (SK_DIM_FECHA_INICIO_META, SK_DIM_PRODUCTO, SK_DIM_CONTRATO)
+    PRIMARY KEY (SK_DIM_FECHA_INICIO_META, SK_DIM_PRODUCTO)
 );
 -- =========================================================================
 -- FASE D: POBLADO DE LA DIMENSIÃ“N TIEMPO
@@ -857,8 +871,8 @@ SELECT
         WHEN 1 THEN 'Enero' WHEN 2 THEN 'Febrero' WHEN 3 THEN 'Marzo' WHEN 4 THEN 'Abril' WHEN 5 THEN 'Mayo' WHEN 6 THEN 'Junio'
         WHEN 7 THEN 'Julio' WHEN 8 THEN 'Agosto' WHEN 9 THEN 'Septiembre' WHEN 10 THEN 'Octubre' WHEN 11 THEN 'Noviembre' WHEN 12 THEN 'Diciembre'
     END,
-    -- BUG 6 FIX: Unificado a 'Trimestre ' para coincidir con DimTiempo.sql
-    'Trimestre ' || extract(quarter from fecha), CASE WHEN extract(month from fecha) <= 6 THEN 'Semestre 1' ELSE 'Semestre 2' END, fecha
+    -- BUG 6 FIX: Unificado a 'Trim. ' para coincidir con schemaDW.sql
+    'Trim. ' || extract(quarter from fecha), CASE WHEN extract(month from fecha) <= 6 THEN 'Semestre 1' ELSE 'Semestre 2' END, fecha
 FROM generate_series('2015-01-01'::date, '2030-12-31'::date, '1 day'::interval) as fecha;
 
 -- =========================================================================
@@ -940,7 +954,7 @@ BEGIN
     )
     SELECT 
         to_char(rs.fecha_siniestro, 'YYYYMMDD')::integer, 
-        to_char(rs.fecha_respuesta, 'YYYYMMDD')::integer,
+        COALESCE(to_char(rs.fecha_respuesta, 'YYYYMMDD')::integer, NULL),
         dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, ds.SK_DIM_SUCURSAL, 
         dp.SK_DIM_PRODUCTO, dsin.SK_DIM_SINIESTRO, 1, 
         rs.monto_reconocido, rs.monto_solicitado, rs.id_rechazo
@@ -953,8 +967,7 @@ BEGIN
     JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON rc.cod_producto = dp.COD_PRODUCTO
     JOIN "SEGURO_DW_G27797047".DIM_SINIESTRO dsin ON rs.nro_siniestro = dsin.NRO_SINIESTRO;
 
-    -- FACT_EVALUACION_SERVICIO
-    TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_EVALUACION_SERVICIO;
+    -- FACT_EVALUACION_SERVICIO (CARGA INCREMENTAL - UPSERT)
     INSERT INTO "SEGURO_DW_G27797047".FACT_EVALUACION_SERVICIO (
         SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_EVALUACION_SERVICIO,
         SK_DIM_TIEMPO_FECHA_EVALUACION, CANTIDAD, RECOMIENDA_AMIGO
@@ -965,25 +978,24 @@ BEGIN
     FROM "SEGURO_G27797047".RECOMIENDA r
     JOIN "SEGURO_DW_G27797047".DIM_CLIENTE dc ON r.cod_cliente = dc.COD_CLIENTE
     JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON r.cod_producto = dp.COD_PRODUCTO
-    JOIN "SEGURO_DW_G27797047".DIM_EVALUACION_SERVICIO de ON r.cod_evaluacion_servicio = de.COD_EVALUACION;
+    JOIN "SEGURO_DW_G27797047".DIM_EVALUACION_SERVICIO de ON r.cod_evaluacion_servicio = de.COD_EVALUACION
+    ON CONFLICT (SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_EVALUACION_SERVICIO, SK_DIM_TIEMPO_FECHA_EVALUACION)
+    DO UPDATE SET RECOMIENDA_AMIGO = EXCLUDED.RECOMIENDA_AMIGO;
 
     -- FACT_METAS
     TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_METAS;
     INSERT INTO "SEGURO_DW_G27797047".FACT_METAS (
         SK_DIM_FECHA_INICIO_META, SK_DIM_FECHA_FIN_META,
-        SK_DIM_PRODUCTO, SK_DIM_CONTRATO,
+        SK_DIM_PRODUCTO,
         MONTO_META_INGRESO, META_RENOVACION, META_ASEGURADOS
     )
     SELECT
         to_char(m.fecha_inicio, 'YYYYMMDD')::integer,
         to_char(m.fecha_fin, 'YYYYMMDD')::integer,
         dp.SK_DIM_PRODUCTO,
-        dcon.SK_DIM_CONTRATO,
         m.meta_ingreso, m.meta_renovacion, m.meta_asegurados
     FROM "SEGURO_G27797047".METAS m
-    JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON m.cod_producto = dp.COD_PRODUCTO
-    JOIN "SEGURO_DW_G27797047".DIM_CONTRATO dcon ON TRUE
-    LIMIT 50;
+    JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON m.cod_producto = dp.COD_PRODUCTO;
 
 END;
 $$;

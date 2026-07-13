@@ -32,20 +32,22 @@ BEGIN
     SELECT cod_evaluacion_servicio, nb_descripcion FROM "SEGURO_G27797047".EVALUACION_SERVICIO
     ON CONFLICT (COD_EVALUACION) DO UPDATE SET NB_DESCRIP = EXCLUDED.NB_DESCRIP;
 
-    -- BUG 1 FIX: Carga incremental de DIM_ESTADO_CONTRATO (catálogo fijo de estados)
-    -- Esta dimensión nunca se poblaba, dejando SK_DIM_ESTADO_CONTRATO siempre NULL en la fact.
-    INSERT INTO "SEGURO_DW_G27797047".DIM_ESTADO_CONTRATO (COD_ESTADO, DESCRIP_ESTADO)
-    VALUES ('AC', 'activo'), ('VE', 'vencido'), ('SU', 'suspendido')
+    INSERT INTO "SEGURO_DW_G27797047".DIM_ESTADO_CONTRATO (COD_ESTADO, DESCRIP_ESTADO) VALUES
+        ('AC', 'Activo'),
+        ('VE', 'Vencido'),
+        ('SU', 'Suspendido')
     ON CONFLICT (COD_ESTADO) DO UPDATE SET DESCRIP_ESTADO = EXCLUDED.DESCRIP_ESTADO;
 
     -- ==========================================
-    -- 2. CARGA DE TABLAS DE HECHOS (RELOAD)
+    -- 2. CARGA DE TABLAS DE HECHOS (UPSERT INCREMENTAL)
+    -- No se usa TRUNCATE: se insertan filas nuevas y se actualizan
+    -- las existentes usando ON CONFLICT con la PRIMARY KEY de cada fact.
+    -- Ventaja: no hay downtime, no se pierden datos en vuelo.
     -- ==========================================
 
     -- FACT_REGISTRO_CONTRATO
-    TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO;
-    -- BUG 1 + BUG 2 FIX: Se agregan SK_DIM_TIEMPO_FECHA_FIN y SK_DIM_ESTADO_CONTRATO,
-    -- que faltaban en el INSERT original.
+    -- PK: (SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_PRODUCTO)
+    -- En DO UPDATE se reflejan cambios de estado (activo→vencido) y monto.
     INSERT INTO "SEGURO_DW_G27797047".FACT_REGISTRO_CONTRATO (
         SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_TIEMPO_FECHA_FIN,
         SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_PRODUCTO,
@@ -66,10 +68,17 @@ BEGIN
     LEFT JOIN "SEGURO_DW_G27797047".DIM_ESTADO_CONTRATO de
         ON de.COD_ESTADO = CASE rc.estado_contrato WHEN 'activo' THEN 'AC' WHEN 'vencido' THEN 'VE' WHEN 'suspendido' THEN 'SU' END
     JOIN "SEGURO_G27797047".CLIENTE c ON rc.cod_cliente = c.cod_cliente
-    JOIN "SEGURO_DW_G27797047".DIM_SUCURSAL dsuc ON c.cod_sucursal = dsuc.COD_SUCURSAL;
+    JOIN "SEGURO_DW_G27797047".DIM_SUCURSAL dsuc ON c.cod_sucursal = dsuc.COD_SUCURSAL
+    ON CONFLICT (SK_DIM_TIEMPO_FECHA_INICIO, SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_PRODUCTO)
+    DO UPDATE SET
+        SK_DIM_TIEMPO_FECHA_FIN    = EXCLUDED.SK_DIM_TIEMPO_FECHA_FIN,
+        SK_DIM_ESTADO_CONTRATO     = EXCLUDED.SK_DIM_ESTADO_CONTRATO,
+        SK_DIM_SUCURSAL            = EXCLUDED.SK_DIM_SUCURSAL,
+        MONTO                      = EXCLUDED.MONTO;
 
     -- FACT_REGISTRO_SINIESTRO
-    TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_REGISTRO_SINIESTRO;
+    -- PK: (SK_FECHA_SINIESTRO, SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_SINIESTRO)
+    -- DO UPDATE refleja cambios de fecha_respuesta o monto_reconocido.
     INSERT INTO "SEGURO_DW_G27797047".FACT_REGISTRO_SINIESTRO (
         SK_FECHA_SINIESTRO, SK_FECHA_RESPUESTA, SK_DIM_CLIENTE, SK_DIM_CONTRATO,
         SK_DIM_SUCURSAL, SK_DIM_PRODUCTO, SK_DIM_SINIESTRO, CANTIDAD,
@@ -77,10 +86,6 @@ BEGIN
     )
     SELECT
         to_char(rs.fecha_siniestro, 'YYYYMMDD')::integer,
-        -- BUG 4 FIX: fecha_respuesta es nullable en la fuente; se usa COALESCE para
-        -- evitar que un NULL rompa la FK: se mapea a NULL explícitamente (valor permitido
-        -- por PostgreSQL en columnas con FK). Los siniestros sin respuesta quedan con
-        -- SK_FECHA_RESPUESTA = NULL, filtrables en el dashboard como "pendientes".
         COALESCE(to_char(rs.fecha_respuesta, 'YYYYMMDD')::integer, NULL),
         dc.SK_DIM_CLIENTE, dcon.SK_DIM_CONTRATO, ds.SK_DIM_SUCURSAL,
         dp.SK_DIM_PRODUCTO, dsin.SK_DIM_SINIESTRO, 1,
@@ -92,9 +97,16 @@ BEGIN
     JOIN "SEGURO_DW_G27797047".DIM_CONTRATO dcon ON rs.nro_contrato = dcon.NRO_CONTRATO
     JOIN "SEGURO_DW_G27797047".DIM_SUCURSAL ds ON c.cod_sucursal = ds.COD_SUCURSAL
     JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON rc.cod_producto = dp.COD_PRODUCTO
-    JOIN "SEGURO_DW_G27797047".DIM_SINIESTRO dsin ON rs.nro_siniestro = dsin.NRO_SINIESTRO;
+    JOIN "SEGURO_DW_G27797047".DIM_SINIESTRO dsin ON rs.nro_siniestro = dsin.NRO_SINIESTRO
+    ON CONFLICT (SK_FECHA_SINIESTRO, SK_DIM_CLIENTE, SK_DIM_CONTRATO, SK_DIM_SINIESTRO)
+    DO UPDATE SET
+        SK_FECHA_RESPUESTA  = EXCLUDED.SK_FECHA_RESPUESTA,
+        MONTO_RECONOCIDO    = EXCLUDED.MONTO_RECONOCIDO,
+        MONTO_SOLICITADO    = EXCLUDED.MONTO_SOLICITADO,
+        ID_RECHAZO          = EXCLUDED.ID_RECHAZO;
 
-    -- FACT_EVALUACION_SERVICIO (CARGA INCREMENTAL - UPSERT)
+    -- FACT_EVALUACION_SERVICIO
+    -- PK: (SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_EVALUACION_SERVICIO, SK_DIM_TIEMPO_FECHA_EVALUACION)
     INSERT INTO "SEGURO_DW_G27797047".FACT_EVALUACION_SERVICIO (
         SK_DIM_CLIENTE, SK_DIM_PRODUCTO, SK_DIM_EVALUACION_SERVICIO,
         SK_DIM_TIEMPO_FECHA_EVALUACION, CANTIDAD, RECOMIENDA_AMIGO
@@ -110,7 +122,8 @@ BEGIN
     DO UPDATE SET RECOMIENDA_AMIGO = EXCLUDED.RECOMIENDA_AMIGO;
 
     -- FACT_METAS
-    TRUNCATE TABLE "SEGURO_DW_G27797047".FACT_METAS;
+    -- PK: (SK_DIM_FECHA_INICIO_META, SK_DIM_PRODUCTO)
+    -- DO UPDATE refleja cambios de metas si se revisan durante el año.
     INSERT INTO "SEGURO_DW_G27797047".FACT_METAS (
         SK_DIM_FECHA_INICIO_META, SK_DIM_FECHA_FIN_META,
         SK_DIM_PRODUCTO,
@@ -118,11 +131,17 @@ BEGIN
     )
     SELECT
         to_char(m.fecha_inicio, 'YYYYMMDD')::integer,
-        to_char(m.fecha_fin, 'YYYYMMDD')::integer,
+        to_char(m.fecha_fin,    'YYYYMMDD')::integer,
         dp.SK_DIM_PRODUCTO,
         m.meta_ingreso, m.meta_renovacion, m.meta_asegurados
     FROM "SEGURO_G27797047".METAS m
-    JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON m.cod_producto = dp.COD_PRODUCTO;
+    JOIN "SEGURO_DW_G27797047".DIM_PRODUCTO dp ON m.cod_producto = dp.COD_PRODUCTO
+    ON CONFLICT (SK_DIM_FECHA_INICIO_META, SK_DIM_PRODUCTO)
+    DO UPDATE SET
+        SK_DIM_FECHA_FIN_META  = EXCLUDED.SK_DIM_FECHA_FIN_META,
+        MONTO_META_INGRESO     = EXCLUDED.MONTO_META_INGRESO,
+        META_RENOVACION        = EXCLUDED.META_RENOVACION,
+        META_ASEGURADOS        = EXCLUDED.META_ASEGURADOS;
 
 END;
 $$;

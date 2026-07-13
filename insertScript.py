@@ -1,5 +1,6 @@
 import random
 from datetime import timedelta
+import datetime
 from faker import Faker
 
 # Usamos es_ES exclusivamente para obtener nombres y apellidos en español
@@ -66,9 +67,9 @@ direcciones_ve = [
 # 2. GENERACIÓN DE DATOS TRANSACCIONALES
 # ==========================================
 
-# Generar 100 CLIENTES
+# Generar 300 CLIENTES
 clientes = []
-for i in range(1, 101):
+for i in range(1, 301):
     cod_cliente = f"C{i:03d}"
     nb_cliente = fake.name()
     ci_rif = f"V-{random.randint(5000000, 31000000)}"
@@ -79,10 +80,10 @@ for i in range(1, 101):
     cod_sucursal = random.choice([s[0] for s in sucursales])
     clientes.append((cod_cliente, nb_cliente, ci_rif, telefono, direccion, sexo, email, cod_sucursal))
 
-# Generar 60 RECOMENDACIONES (EVALUACION_SERVICIO)
+# Generar 150 RECOMENDACIONES (EVALUACION_SERVICIO)
 recomendaciones = []
 # Evitamos duplicidad de llaves primarias en Recomendaciones seleccionando clientes únicos
-clientes_evaluando = random.sample(clientes, 60)
+clientes_evaluando = random.sample(clientes, 150)
 for c in clientes_evaluando:
     cod_cliente = c[0]
     evaluacion_obj = random.choice(evaluaciones)
@@ -93,12 +94,12 @@ for c in clientes_evaluando:
     fecha_eval = fake.date_between(start_date='-2y', end_date='today')
     recomendaciones.append((cod_cliente, cod_eval, cod_producto, recomienda, fecha_eval))
 
-# Generar 150 CONTRATOS y REGISTRO_CONTRATO
+# Generar 500 CONTRATOS y REGISTRO_CONTRATO
 contratos = []
 registros_contratos = []
 estados_contrato = ['activo', 'vencido', 'suspendido']
 
-for i in range(1, 151):
+for i in range(1, 501):
     nro_contrato = f"CT-{i:04d}"
     descrip = f"Contrato de poliza {i} para asegurado"
     contratos.append((nro_contrato, descrip))
@@ -106,8 +107,8 @@ for i in range(1, 151):
     cod_producto = random.choice(productos)[0]
     cod_cliente = random.choice(clientes)[0]
     
-    # Fechas
-    start_date = fake.date_between(start_date='-3y', end_date='today')
+    # Fechas explicitamente entre 2023 y 2026
+    start_date = fake.date_between(start_date=datetime.date(2023, 1, 1), end_date=datetime.date(2026, 12, 31))
     end_date = start_date + timedelta(days=365)
     
     monto = round(random.uniform(150.0, 2500.0), 2)
@@ -115,9 +116,9 @@ for i in range(1, 151):
     
     registros_contratos.append((nro_contrato, cod_producto, cod_cliente, start_date, end_date, monto, estado))
 
-# Generar 40 REGISTRO_SINIESTRO basados en los contratos existentes
+# Generar 150 REGISTRO_SINIESTRO basados en los contratos existentes
 registros_siniestros = []
-contratos_con_siniestro = random.sample(registros_contratos, 40)
+contratos_con_siniestro = random.sample(registros_contratos, 150)
 
 for reg_c in contratos_con_siniestro:
     nro_contrato = reg_c[0]
